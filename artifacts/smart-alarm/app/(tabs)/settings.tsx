@@ -1,16 +1,20 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { getTMModelUrl, isValidTMUrl, setTMModelUrl } from "@/lib/tmModelStore";
 
 interface SettingRowProps {
   icon: string;
@@ -20,12 +24,13 @@ interface SettingRowProps {
   onToggle?: (v: boolean) => void;
   onPress?: () => void;
   colors: ReturnType<typeof useColors>;
+  last?: boolean;
 }
 
-function SettingRow({ icon, label, description, value, onToggle, onPress, colors }: SettingRowProps) {
+function SettingRow({ icon, label, description, value, onToggle, onPress, colors, last }: SettingRowProps) {
   return (
     <TouchableOpacity
-      style={[styles.settingRow, { borderBottomColor: colors.border }]}
+      style={[styles.settingRow, !last && { borderBottomWidth: 1, borderBottomColor: colors.border }]}
       onPress={onPress}
       disabled={!onPress && onToggle === undefined}
       activeOpacity={onPress ? 0.7 : 1}
@@ -56,9 +61,36 @@ export default function SettingsScreen() {
   const [globalStrict, setGlobalStrict] = useState(false);
   const [haptics, setHaptics] = useState(true);
   const [notifications, setNotifications] = useState(true);
+  const [tmUrl, setTmUrl] = useState("");
+  const [tmSaved, setTmSaved] = useState(false);
+  const [tmUrlInput, setTmUrlInput] = useState("");
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
+
+  useEffect(() => {
+    getTMModelUrl().then((url) => {
+      setTmUrl(url);
+      setTmUrlInput(url);
+    });
+  }, []);
+
+  async function handleSaveModelUrl() {
+    const url = tmUrlInput.trim();
+    if (url && !isValidTMUrl(url)) {
+      Alert.alert(
+        "Invalid URL",
+        "The URL must be a Teachable Machine model URL, e.g.:\nhttps://teachablemachine.withgoogle.com/models/ABC123/"
+      );
+      return;
+    }
+    await setTMModelUrl(url);
+    setTmUrl(url);
+    setTmSaved(true);
+    setTimeout(() => setTmSaved(false), 2000);
+  }
+
+  const modelConfigured = isValidTMUrl(tmUrl);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -94,17 +126,68 @@ export default function SettingsScreen() {
             value={notifications}
             onToggle={setNotifications}
             colors={colors}
+            last
           />
         </View>
 
-        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>AI VERIFICATION</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>AI MODEL — GOOGLE TEACHABLE MACHINE</Text>
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <SettingRow
-            icon="cpu"
-            label="AI Model"
-            description="MobileNet via TensorFlow.js — runs fully on-device"
-            colors={colors}
-          />
+          <View style={[styles.tmInfoRow, { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+            <View style={[styles.settingIcon, { backgroundColor: colors.primary + "22" }]}>
+              <Feather name="cpu" size={18} color={colors.primary} />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Google Teachable Machine</Text>
+              <Text style={[styles.settingDesc, { color: colors.mutedForeground }]}>
+                Custom image classification model trained at teachablemachine.withgoogle.com
+              </Text>
+              <View style={[styles.statusBadge, { backgroundColor: modelConfigured ? "#22c55e22" : "#f59e0b22" }]}>
+                <View style={[styles.statusDot, { backgroundColor: modelConfigured ? "#22c55e" : "#f59e0b" }]} />
+                <Text style={[styles.statusText, { color: modelConfigured ? "#22c55e" : "#f59e0b" }]}>
+                  {modelConfigured ? "Model configured" : "No model — using simulation"}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={[styles.tmUrlSection, { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+            <Text style={[styles.tmUrlLabel, { color: colors.mutedForeground }]}>TEACHABLE MACHINE MODEL URL</Text>
+            <Text style={[styles.tmUrlHint, { color: colors.mutedForeground }]}>
+              1. Go to teachablemachine.withgoogle.com{"\n"}
+              2. Train your image model (add classes for objects/activities){"\n"}
+              3. Export → Upload (Cloud) → Copy the model URL{"\n"}
+              4. Paste it below
+            </Text>
+            <View style={[styles.inputRow, { borderColor: modelConfigured ? colors.primary : colors.border }]}>
+              <TextInput
+                style={[styles.urlInput, { color: colors.foreground }]}
+                value={tmUrlInput}
+                onChangeText={setTmUrlInput}
+                placeholder="https://teachablemachine.withgoogle.com/models/..."
+                placeholderTextColor={colors.mutedForeground}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+              />
+            </View>
+            <View style={styles.urlButtonRow}>
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: tmSaved ? "#22c55e" : colors.primary }]}
+                onPress={handleSaveModelUrl}
+              >
+                <Feather name={tmSaved ? "check" : "save"} size={14} color="#fff" />
+                <Text style={styles.saveBtnText}>{tmSaved ? "Saved!" : "Save URL"}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.linkBtn, { borderColor: colors.border }]}
+                onPress={() => Linking.openURL("https://teachablemachine.withgoogle.com/")}
+              >
+                <Feather name="external-link" size={14} color={colors.primary} />
+                <Text style={[styles.linkBtnText, { color: colors.primary }]}>Open Teachable Machine</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <SettingRow
             icon="percent"
             label="Confidence Threshold"
@@ -114,8 +197,9 @@ export default function SettingsScreen() {
           <SettingRow
             icon="wifi-off"
             label="Offline Operation"
-            description="All core features work without internet"
+            description="Runs fully on-device — no data leaves your phone"
             colors={colors}
+            last
           />
         </View>
 
@@ -124,7 +208,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon="database"
             label="Storage Engine"
-            description="SQLite — all alarm events and sleep scores stored locally"
+            description="SQLite — all alarm events and sleep scores stored locally on-device"
             colors={colors}
           />
           <SettingRow
@@ -132,6 +216,7 @@ export default function SettingsScreen() {
             label="Secondary Alarm Interval"
             description="Default: 30 minutes after Stage 1 completion"
             colors={colors}
+            last
           />
         </View>
 
@@ -145,11 +230,12 @@ export default function SettingsScreen() {
               Version 1.0.0
             </Text>
             <Text style={[styles.aboutDesc, { color: colors.mutedForeground }]}>
-              Built with React Native, TensorFlow.js (MobileNet), and SQLite.
               Forces physical wakefulness through two AI-verified photo stages.
+              Uses Google Teachable Machine for custom on-device image classification,
+              with SQLite for offline-first data storage.
             </Text>
             <View style={styles.techTags}>
-              {["React Native", "TensorFlow.js", "MobileNet", "SQLite", "Expo"].map((tag) => (
+              {["React Native", "TensorFlow.js", "Teachable Machine", "SQLite", "Expo"].map((tag) => (
                 <View key={tag} style={[styles.techTag, { backgroundColor: colors.primary + "22" }]}>
                   <Text style={[styles.techTagText, { color: colors.primary }]}>{tag}</Text>
                 </View>
@@ -189,12 +275,60 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 14,
     gap: 12,
-    borderBottomWidth: 1,
   },
   settingIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   settingContent: { flex: 1 },
   settingLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
-  settingDesc: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
+  settingDesc: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2, lineHeight: 17 },
+  tmInfoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    padding: 14,
+    gap: 12,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+  },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+  tmUrlSection: { padding: 14 },
+  tmUrlLabel: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, marginBottom: 8 },
+  tmUrlHint: { fontSize: 12, fontFamily: "Inter_400Regular", lineHeight: 18, marginBottom: 12 },
+  inputRow: {
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  urlInput: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  urlButtonRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  saveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  saveBtnText: { color: "#fff", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  linkBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  linkBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   aboutCard: { padding: 16 },
   aboutTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
   aboutVersion: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },

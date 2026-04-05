@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Smart Dual-Verification Alarm"
+version = "1.0.0"
+id = "artifacts/smart-alarm"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 25633
+
+[services.development]
+run = "pnpm --filter @workspace/smart-alarm run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/smart-alarm", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/smart-alarm", "run", "serve" ]
+
+[services.env]
+PORT = "25633"
+BASE_PATH = "/"

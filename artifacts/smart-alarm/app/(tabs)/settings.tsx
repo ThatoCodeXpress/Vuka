@@ -139,7 +139,7 @@ export default function SettingsScreen() {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.aboutCard}>
             <Text style={[styles.aboutTitle, { color: colors.foreground }]}>
-              Smart Dual-Verification Alarm
+              Vuka — Smart Dual-Verification Alarm
             </Text>
             <Text style={[styles.aboutVersion, { color: colors.mutedForeground }]}>
               Version 1.0.0

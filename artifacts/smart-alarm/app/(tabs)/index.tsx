@@ -46,7 +46,7 @@ export default function HomeScreen() {
             <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
               {getGreeting()}
             </Text>
-            <Text style={[styles.title, { color: colors.foreground }]}>Smart Alarm</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>Vuka</Text>
           </View>
           <TouchableOpacity
             style={[styles.addBtn, { backgroundColor: colors.primary }]}

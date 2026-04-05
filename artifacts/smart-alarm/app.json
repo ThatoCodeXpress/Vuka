@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Smart Dual-Verification Alarm",
+    "name": "Vuka",
     "slug": "smart-alarm",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSCameraUsageDescription": "The Smart Alarm needs camera access to verify you are awake by photographing a specified object.",
+        "NSCameraUsageDescription": "Vuka needs camera access to verify you are awake by photographing a specified object.",
         "NSPhotoLibraryUsageDescription": "Access your photo library to select verification photos."
       }
     },
@@ -38,7 +38,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Smart Alarm to access your camera to verify you are awake."
+          "cameraPermission": "Allow Vuka to access your camera to verify you are awake."
         }
       ],
       [

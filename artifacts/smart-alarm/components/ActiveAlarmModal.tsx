@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Modal,
@@ -14,22 +14,36 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useAlarm } from "@/context/AlarmContext";
 import { VerificationCamera } from "./VerificationCamera";
+import { startAlarmSound, stopAlarmSound } from "@/lib/alarmSound";
 
 export function ActiveAlarmModal() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { alarmStage, currentAlarm, currentObject, currentActivity, dismissAlarm, verificationResult, alarms, triggerAlarm } = useAlarm();
   const [showCamera, setShowCamera] = useState(false);
-  const pulseAnim = new Animated.Value(1);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const soundStarted = useRef(false);
 
   const isActive = alarmStage === "stage1" || alarmStage === "stage2" || alarmStage === "complete";
 
   useEffect(() => {
+    if (alarmStage === "stage1") {
+      soundStarted.current = false;
+    }
+    if ((alarmStage === "stage1" || alarmStage === "stage2") && !soundStarted.current) {
+      soundStarted.current = true;
+      startAlarmSound();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    }
+    if (alarmStage === "complete" || alarmStage === "idle") {
+      stopAlarmSound();
+      soundStarted.current = false;
+    }
     if (alarmStage === "stage1" || alarmStage === "stage2") {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.05, duration: 600, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.08, duration: 500, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
         ])
       ).start();
     }
@@ -128,7 +142,8 @@ export function ActiveAlarmModal() {
                   <TouchableOpacity
                     style={[styles.cameraBtn, { backgroundColor: colors.primary }]}
                     onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+                      stopAlarmSound();
                       setShowCamera(true);
                     }}
                   >
@@ -142,7 +157,8 @@ export function ActiveAlarmModal() {
                     <TouchableOpacity
                       style={[styles.snoozeBtn, { borderColor: colors.border }]}
                       onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                        stopAlarmSound();
                         dismissAlarm();
                       }}
                     >

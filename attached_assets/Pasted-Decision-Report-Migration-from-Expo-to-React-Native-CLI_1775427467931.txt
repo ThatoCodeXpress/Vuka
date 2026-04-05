@@ -1,0 +1,222 @@
+Decision Report
+Migration from Expo to React Native CLI
+Project: Smart Dual-Verification Alarm System
+Team: Group 1
+Date: March 2026
+1. Purpose of This Report
+This report informs the team of a critical technical decision: we must
+migrate our project from Expo to React Native CLI. This decision is
+based on the system requirements and the technical limitations of Expo
+in relation to the Smart Dual-Verification Alarm System.
+2. Current Project Status
+Week: 3
+Progress: UI design and prototyping (still in progress)
+Technology used so far: Expo (JavaScript)
+At this stage, no core system features — alarm engine, AI verification,
+database, etc. — have been implemented yet. This makes now the
+ideal time to make the switch.
+3. Expo vs React Native CLI: A Detailed Comparison
+Before explaining why we are switching, it is important for the team to
+understand what both tools are, how they differ, and what trade-offs
+each one brings.
+3.1 What is Expo?
+Expo is a framework and platform built on top of React Native. It is
+designed to make getting started with mobile development as fast and
+simple as possible. Expo manages the native build configuration for
+you, meaning developers do not need Android Studio or Xcode to test
+their apps — they can simply scan a QR code using the Expo Go app.
+3.2 What is React Native CLI?
+React Native CLI is the official, lower-level way to build React Native
+applications. It gives developers full, direct control over the native
+Android and iOS project files. Unlike Expo, it does not abstract away
+the native layer — developers work with Android Studio, Gradle build
+files, and native modules directly.
+3.3 Pros and Cons of Expo
+Pros of Expo:
+Quick setup — no Android Studio or Xcode required to get started.
+Beginner friendly with minimal configuration.
+Expo Go app allows instant testing on a physical device via QR code.
+Managed workflow handles updates and builds in the cloud.
+Large collection of pre-built Expo SDK modules (camera,
+notifications, etc.).
+Cons of Expo:
+Limited access to native Android and iOS APIs — many advanced
+features are blocked.
+Background processing and alarm scheduling are restricted.
+Cannot install arbitrary native modules without 'ejecting', which
+breaks the managed workflow.
+Notification handling is basic and does not support escalation-level
+control.
+Offline AI processing (e.g., TensorFlow.js with native bindings) is not
+well supported.
+Ejecting late in development causes significant rework and instability.
+3.4 Pros and Cons of React Native CLI
+Pros of React Native CLI:
+Full access to all native Android and iOS APIs.
+Supports all third-party native modules without restrictions.
+Background services and system-level alarm scheduling work
+reliably.
+Advanced notification control including escalation and custom alarm
+enforcement.
+Better integration with AI/ML libraries such as TensorFlow.js and
+ONNX Runtime.
+Full offline functionality including SQLite and local storage.
+No limitations on how the app interacts with device hardware.
+Cons of React Native CLI:
+Requires Android Studio setup — more complex initial configuration.
+Developers must manage native build files (Gradle,
+AndroidManifest.xml) manually.
+Longer setup time compared to Expo for first-time developers.
+No equivalent to Expo Go — a physical device or emulator via
+Android Studio is required for testing.
+Manually linking native dependencies can sometimes lead to build
+errors.
+4. Why Expo Is Not Suitable for Our Project
+While Expo is useful for quick prototyping, the Smart Dual-Verification
+Alarm System goes beyond a basic mobile application. It requires deep
+access to device functionality and strict control over system behavior.
+Key limitations of Expo relevant to our project:
+Limited background processing — required for alarm scheduling even
+when the app is closed.
+Weak control over system-level alarm behavior and enforcement.
+Restricted notification handling — escalation alerts are not supported.
+Limited support for advanced native modules such as real-time
+camera integration.
+Not ideal for offline-first AI processing using TensorFlow.js.
+Switching later (ejecting) would cause far greater disruption and
+rework.
+5. System Requirements That Drive This Decision
+Our project includes the following critical features that demand native
+access:
+An alarm that cannot be dismissed without completing AI verification.
+Background alarm scheduling that works even when the app is fully
+closed.
+Real-time camera integration for object capture during the alarm.
+AI object recognition using TensorFlow.js running fully offline.
+Local database using SQLite for storing alarm configurations and
+history.
+Full offline operation — no internet connection required.
+Escalation notifications to alert a second user if the alarm is not
+resolved.
+All of these features require low-level access to Android system
+capabilities, which Expo does not fully support.
+6. Why React Native CLI Is the Correct Choice
+React Native CLI provides everything our system needs. It gives us full
+access to native Android APIs, reliable background services, advanced
+notification control, strong AI library support, complete SQLite and
+offline storage capabilities, and the ability to enforce strict app behavior
+for our anti-snooze alarm system.
+7. New Technology Required for the CLI Migration
+Switching to React Native CLI introduces a set of new tools and
+libraries that the team must understand and install. Below is a
+breakdown of what will be needed and why.
+7.1 Development Environment
+Android Studio:
+Android Studio is Google's official IDE for Android development. With
+React Native CLI, it replaces the need for Expo Go. The team will use
+Android Studio to run an Android Emulator for testing and to manage
+Gradle builds. It must be installed on each developer's machine.
+Node.js and npm/yarn:
+Node.js remains required for running the React Native development
+server. npm or yarn will be used to install all JavaScript
+dependencies.
+Java Development Kit (JDK):
+Required by Android Studio for compiling the native Android code.
+JDK 17 is recommended for React Native CLI projects as of
+2025/2026.
+7.2 Camera Module
+Replacement: react-native-vision-camera (recommended) or
+react-native-camera
+Expo's camera module will not work in a CLI project.
+react-native-vision-camera is the modern, actively maintained camera
+library for React Native CLI. It supports real-time frame processing,
+which is essential for our live object detection during alarm
+verification.
+7.3 Notifications
+Replacement: @notifee/react-native
+Notifee is a powerful notification library built specifically for React
+Native CLI. It supports full-screen alarm-style notifications, custom
+sounds, vibration patterns, and notification channels — all of which
+are required for our escalation alarm system. expo-notifications will
+not be used.
+7.4 SQLite Database
+Replacement: react-native-sqlite-storage or op-sqlite
+For local offline storage, we will use a native SQLite library. op-sqlite
+is the newer and faster option based on SQLite with optimized
+bindings. This replaces expo-sqlite and supports full offline database
+operations for storing alarm settings and logs.
+7.5 AI / Object Recognition
+Library: TensorFlow.js with @tensorflow/tfjs-react-native
+TensorFlow.js can run machine learning models directly on the device
+without any internet connection. The @tensorflow/tfjs-react-native
+package provides the bridge for running TensorFlow models inside a
+React Native CLI environment. We will use a pre-trained MobileNet or
+custom COCO-SSD model for identifying the random verification
+object.
+7.6 Navigation
+Library: React Navigation (remains the same)
+React Navigation is already the standard for both Expo and CLI
+projects. Our existing navigation structure will remain largely
+compatible, though the navigation container setup may require slight
+adjustment.
+7.7 Background Services and Alarm Scheduling
+Library: react-native-background-actions or
+react-native-alarm-manager
+These libraries allow the app to schedule and trigger alarms even
+when the app is in the background or fully closed. This is a core
+requirement of our system and is not reliably achievable in Expo
+without these native modules.
+8. Impact on Current Work
+Our existing UI work is not wasted. Components, layouts, and styling
+created in Expo are fully reusable in React Native CLI since both are
+built on the same React Native foundation.
+What remains reusable:
+All screen components (Home, Set Alarm, Alarm Ringing, Camera
+Capture, etc.).
+Styling using StyleSheet.
+Business logic and state management code.
+What will change:
+The overall project structure will be regenerated using React Native
+CLI.
+All dependencies will be reinstalled from scratch in the new project.
+Navigation setup may need minor reconfiguration.
+All Expo-specific imports and APIs must be removed and replaced.
+9. Risks of Not Switching
+If the team continues with Expo, the following risks apply:
+Core features such as alarm enforcement and AI verification may fail
+to work correctly.
+The team may be forced to migrate later under time pressure, causing
+far greater disruption.
+Project complexity will exceed what Expo is capable of handling.
+Marks may be lost due to incomplete or non-functional features.
+10. Required Migration Steps
+Step 1: Initialize a new React Native CLI project using the official CLI
+command.
+Step 2: Set up the Android development environment using Android
+Studio.
+Step 3: Copy all existing screens and components into the new
+project structure.
+Step 4: Remove all Expo-specific imports and replace them with
+CLI-compatible libraries.
+Step 5: Install and configure all new native dependencies listed in
+Section 7.
+Step 6: Configure Android permissions for camera, storage, and
+notifications.
+Step 7: Test all UI screens on the Android emulator or a physical
+device.
+Step 8: Begin development of core modules: Alarm Engine, AI
+Verification, Database, Notifications.
+11. Recommendation
+It is strongly recommended that the team switches to React Native CLI
+immediately, during Week 3. This is the best possible time to make the
+transition because only the UI has been developed so far, no backend
+or core logic needs rewriting, and the rework required is minimal
+compared to switching later in development.
+12. Conclusion
+Switching to React Native CLI is not optional — it is necessary for the
+success of the Smart Dual-Verification Alarm System. Expo cannot
+support the level of native access our system demands. Making this
+change now will reduce long-term risk, improve system performance
+and reliability, and ensure all required features can be implemented
+correctly and on time.
+End of Report

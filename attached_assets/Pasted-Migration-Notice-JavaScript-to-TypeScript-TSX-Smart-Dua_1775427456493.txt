@@ -1,0 +1,73 @@
+Migration Notice: JavaScript to TypeScript (TSX)
+Smart Dual-Verification Alarm System — Internal Team Report
+To the Team
+Hey guys, upon migrating our project to React Native CLI, I noticed that
+the project was scaffolded using a TypeScript template rather than
+plain JavaScript. I did some research into why this is almost always the
+default case, and after looking into it more closely, I think it is the right
+call for us. This report is just to walk you all through what that means,
+why it matters, and — most importantly — why it is really not a big deal
+for us to adopt it at this stage.
+What is TypeScript and Why Does React Native CLI Default to It?
+TypeScript is a superset of JavaScript — meaning it is JavaScript with
+optional type annotations added on top. You write the same logic, the
+same functions, the same component structure, just with labels that tell
+the code editor what kind of data to expect. React Native CLI defaults
+to TypeScript because the broader React Native community, Meta
+included, has standardised on it. It leads to fewer runtime crashes,
+better tooling support, and cleaner collaboration across teams.
+For our project, this means our files will carry the .tsx extension instead
+of .js or .jsx. TSX is simply TypeScript with JSX support — the same
+JSX we already use to write our components.
+What Actually Changes for Us?
+In practical terms, very little changes in how we write code day-to-day.
+The main differences are:
+• File extensions change from .js / .jsx to .ts / .tsx.
+• We add type annotations to function parameters and variables
+where relevant.
+• Our navigation params between screens (Home, Set Alarm, Alarm
+Ringing, Camera Capture) will be typed, which means passing the
+wrong data between screens will be caught immediately by the
+editor.
+• We can use 'any' as a fallback type when we are unsure, so we
+are never fully blocked.
+Pros of Using TypeScript
+• Early error detection: Type errors are flagged in the editor before
+the app even runs, saving debugging time during development.
+• Better autocomplete: Your editor will suggest correct props,
+function arguments, and data shapes automatically, which speeds
+up coding.
+• Safer refactoring: When one of us changes a component or
+function, TypeScript will immediately highlight everywhere else that
+needs updating.
+• Team consistency: Typed interfaces act as a contract between
+screens and components, so everyone knows exactly what data to
+pass and expect.
+• Industry standard: TypeScript is the default in most React Native
+projects. Following this convention means more tutorials and Stack
+Overflow answers apply directly to our code.
+• Scales with complexity: As our app grows across five screens
+and verification logic, typed code stays manageable and readable.
+Cons / Things to Be Aware Of
+• Small initial learning curve: If you have only worked in plain JS
+before, the type syntax will feel unfamiliar at first — but it becomes
+natural within a day or two.
+• Slightly more verbose code: You will occasionally write a few
+extra lines to define types or interfaces, though this is minor.
+• Navigation typing can feel complex: Typing React Navigation
+screen params requires a bit of a template setup, but it is a one-time
+configuration we do together.
+• Red squiggles can feel overwhelming: TypeScript will flag a lot
+of things early on. This is actually it doing its job, but it can feel like a
+lot when you are new to it.
+Conclusion
+The migration from JavaScript to TypeScript is not a rewrite — it is an
+upgrade in confidence. The core logic of our Smart Dual-Verification
+Alarm System stays exactly the same. We are just giving our code
+better labels so that we catch mistakes earlier and collaborate more
+clearly. Given that we are all learning while building, TypeScript is
+actually a helpful teacher: it tells us when something is wrong before
+we waste time running the app to find out.
+If anyone has questions or gets stuck on a type error, bring it to the
+group — we figure it out together.
+— Rerah

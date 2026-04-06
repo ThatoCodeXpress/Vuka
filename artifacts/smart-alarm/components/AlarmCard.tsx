@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import type { Alarm } from "@/context/AlarmContext";
+import { unlockAudio } from "@/lib/alarmSound";
 
 interface Props {
   alarm: Alarm;
@@ -76,7 +77,7 @@ export function AlarmCard({ alarm, onToggle, onEdit, onDelete, onTrigger }: Prop
         />
         <TouchableOpacity
           style={[styles.testBtn, { backgroundColor: colors.success + "22" }]}
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onTrigger(); }}
+          onPress={() => { unlockAudio(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); onTrigger(); }}
         >
           <Feather name="bell" size={16} color={colors.success} />
         </TouchableOpacity>
